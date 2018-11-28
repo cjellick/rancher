@@ -28,14 +28,17 @@ func (c *controller) sync(key string, cluster *v3.Cluster) (runtime.Object, erro
 
 	if cluster.Spec.AmazonElasticContainerServiceConfig != nil {
 		cluster.Spec.GenericEngineConfig = cluster.Spec.AmazonElasticContainerServiceConfig
+		(*cluster.Spec.GenericEngineConfig)["driverName"] = "amazonelasticcontainerservice"
 	}
 
 	if cluster.Spec.AzureKubernetesServiceConfig != nil {
 		cluster.Spec.GenericEngineConfig = cluster.Spec.AzureKubernetesServiceConfig
+		(*cluster.Spec.GenericEngineConfig)["driverName"] = "azurekubernetesservice"
 	}
 
 	if cluster.Spec.GoogleKubernetesEngineConfig != nil {
 		cluster.Spec.GenericEngineConfig = cluster.Spec.GoogleKubernetesEngineConfig
+		(*cluster.Spec.GenericEngineConfig)["driverName"] = "googlekubernetesengine"
 	}
 
 	return nil, nil

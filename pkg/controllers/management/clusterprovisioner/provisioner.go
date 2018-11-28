@@ -392,6 +392,23 @@ func (p *Provisioner) getDriver(cluster *v3.Cluster) (string, error) {
 	var driver *v3.KontainerDriver
 	var err error
 
+	if cluster.Spec.GenericEngineConfig == nil {
+		if cluster.Spec.AmazonElasticContainerServiceConfig != nil {
+			cluster.Spec.GenericEngineConfig = cluster.Spec.AmazonElasticContainerServiceConfig
+			(*cluster.Spec.GenericEngineConfig)["driverName"] = "amazonelasticcontainerservice"
+		}
+
+		if cluster.Spec.AzureKubernetesServiceConfig != nil {
+			cluster.Spec.GenericEngineConfig = cluster.Spec.AzureKubernetesServiceConfig
+			(*cluster.Spec.GenericEngineConfig)["driverName"] = "azurekubernetesservice"
+		}
+
+		if cluster.Spec.GoogleKubernetesEngineConfig != nil {
+			cluster.Spec.GenericEngineConfig = cluster.Spec.GoogleKubernetesEngineConfig
+			(*cluster.Spec.GenericEngineConfig)["driverName"] = "googlekubernetesengine"
+		}
+	}
+
 	if cluster.Spec.GenericEngineConfig != nil {
 		kontainerDriverName := (*cluster.Spec.GenericEngineConfig)["driverName"].(string)
 		driver, err = p.KontainerDriverLister.Get("", kontainerDriverName)
