@@ -29,6 +29,10 @@ type grpcClient struct {
 	driverName string
 }
 
+func (rpc *grpcClient) Close() error {
+	return rpc.client.Close()
+}
+
 // Create call grpc create
 func (rpc *grpcClient) Create(ctx context.Context, opts *DriverOptions, clusterInfo *ClusterInfo) (*ClusterInfo, error) {
 	o, err := rpc.client.Create(ctx, &CreateRequest{

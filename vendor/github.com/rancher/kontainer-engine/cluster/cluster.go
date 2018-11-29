@@ -321,14 +321,3 @@ func NewCluster(driverName, name, addr string, configGetter ConfigGetter, persis
 		PersistStore: persistStore,
 	}, nil
 }
-
-func FromCluster(cluster *Cluster, addr string, configGetter ConfigGetter, persistStore PersistentStore) (*Cluster, error) {
-	rpcClient, err := types.NewClient(cluster.DriverName, addr)
-	if err != nil {
-		return nil, err
-	}
-	cluster.Driver = rpcClient
-	cluster.ConfigGetter = configGetter
-	cluster.PersistStore = persistStore
-	return cluster, nil
-}

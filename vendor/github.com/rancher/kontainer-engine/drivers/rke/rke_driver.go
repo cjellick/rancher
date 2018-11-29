@@ -483,3 +483,8 @@ func clusterUp(
 	}
 	return APIURL, caCrt, clientCert, clientKey, certs, err
 }
+
+
+func (d *Driver) Close() error {
+	return nil
+}

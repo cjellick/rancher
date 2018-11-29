@@ -201,6 +201,7 @@ func (e *engineService) convertCluster(name string, listenAddr string, spec v3.C
 		clusterSpec: spec,
 		clusterName: name,
 	}
+
 	clusterPlugin, err := cluster.NewCluster(driverName, name, listenAddr, configGetter, e.store)
 	if err != nil {
 		return cluster.Cluster{}, err
@@ -241,6 +242,7 @@ func (e *engineService) Create(ctx context.Context, name string, kontainerDriver
 	if err != nil {
 		return "", "", "", err
 	}
+	defer cls.Driver.Close()
 
 	if err := cls.Create(ctx); err != nil {
 		return "", "", "", err
@@ -278,6 +280,8 @@ func (e *engineService) Update(ctx context.Context, name string, kontainerDriver
 	if err != nil {
 		return "", "", "", err
 	}
+	defer cls.Driver.Close()
+
 	if err := cls.Update(ctx); err != nil {
 		return "", "", "", err
 	}
@@ -306,6 +310,8 @@ func (e *engineService) Remove(ctx context.Context, name string, kontainerDriver
 	if err != nil {
 		return err
 	}
+	defer cls.Driver.Close()
+
 	return cls.Remove(ctx)
 }
 
@@ -327,6 +333,7 @@ func (e *engineService) GetDriverCreateOptions(ctx context.Context, name string,
 	if err != nil {
 		return nil, err
 	}
+	defer cls.Driver.Close()
 
 	return cls.GetDriverCreateOptions(ctx)
 }
@@ -349,6 +356,7 @@ func (e *engineService) GetDriverUpdateOptions(ctx context.Context, name string,
 	if err != nil {
 		return nil, err
 	}
+	defer cls.Driver.Close()
 
 	return cls.GetDriverUpdateOptions(ctx)
 }
@@ -366,11 +374,11 @@ func (e *engineService) GetK8sCapabilities(ctx context.Context, name string, kon
 	}
 
 	defer runningDriver.Stop()
-
 	cls, err := e.convertCluster(name, listenAddr, clusterSpec)
 	if err != nil {
 		return nil, err
 	}
+	defer cls.Driver.Close()
 
 	return cls.GetK8SCapabilities(ctx)
 }

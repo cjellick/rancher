@@ -611,6 +611,7 @@ type DriverClient interface {
 	SetNodeCount(ctx context.Context, in *SetNodeCountRequest, opts ...grpc.CallOption) (*Empty, error)
 	GetCapabilities(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Capabilities, error)
 	GetK8SCapabilities(ctx context.Context, in *DriverOptions, opts ...grpc.CallOption) (*K8SCapabilities, error)
+	Close() error
 }
 
 type driverClient struct {
@@ -621,6 +622,9 @@ func NewDriverClient(cc *grpc.ClientConn) DriverClient {
 	return &driverClient{cc}
 }
 
+func (c *driverClient) Close() error {
+	return c.cc.Close()
+}
 func (c *driverClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*ClusterInfo, error) {
 	out := new(ClusterInfo)
 	err := grpc.Invoke(ctx, "/types.Driver/Create", in, out, c.cc, opts...)

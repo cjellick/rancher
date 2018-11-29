@@ -179,3 +179,7 @@ func (d *Driver) Remove(ctx context.Context, clusterInfo *types.ClusterInfo) err
 	// Nothing to do
 	return nil
 }
+
+func (d *Driver) Close() error {
+	return nil
+}

@@ -914,3 +914,7 @@ func (d *Driver) GetK8SCapabilities(ctx context.Context, _ *types.DriverOptions)
 		},
 	}, nil
 }
+
+func (d *Driver) Close() error {
+	return nil
+}
