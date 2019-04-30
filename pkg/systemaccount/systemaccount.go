@@ -2,6 +2,8 @@ package systemaccount
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"time"
 
 	"github.com/rancher/rancher/pkg/randomtoken"
 	"github.com/rancher/rancher/pkg/ref"
@@ -56,6 +58,10 @@ func (s *Manager) CreateSystemAccount(cluster *v3.Cluster) error {
 	if err == nil {
 		return nil
 	}
+
+	logrus.Info("CAJ Sleeping")
+	time.Sleep(time.Second * 5)
+	logrus.Info("CAJ Done sleeping")
 
 	_, err = s.crtbs.Create(&v3.ClusterRoleTemplateBinding{
 		ObjectMeta: v1.ObjectMeta{
