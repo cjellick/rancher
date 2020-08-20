@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"sync"
@@ -15,8 +14,6 @@ import (
 	v3 "github.com/rancher/types/apis/management.cattle.io/v3"
 	"github.com/rancher/types/config/dialer"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/httpstream"
-	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/proxy"
 	"k8s.io/client-go/rest"
 )
@@ -232,14 +229,33 @@ func (r *RemoteService) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if httpstream.IsUpgradeRequest(req) {
-		upgradeProxy := NewUpgradeProxy(&u, transport)
-		upgradeProxy.ServeHTTP(rw, req)
-		return
-	}
-
 	httpProxy := proxy.NewUpgradeAwareHandler(&u, transport, true, false, er)
+	httpProxy.UpgradeTransport = newUpgradeTransport(transport)
 	httpProxy.ServeHTTP(rw, req)
+}
+
+func newUpgradeTransport(r http.RoundTripper) proxy.UpgradeRequestRoundTripper {
+	return &urt{
+		r,
+	}
+}
+
+type urt struct {
+	http.RoundTripper
+
+}
+
+func (x *urt) WrapRequest(req *http.Request) (*http.Request, error) {
+	target, err := http.ProxyFromEnvironment(req)
+	req.URL = target
+	// maybe need to do logic like this?
+	// oc := *p.Location
+	//	loc.RawQuery = req.URL.RawQuery
+	//
+	//	newReq := req.WithContext(req.Context())
+	//	newReq.Header = utilnet.CloneHeader(req.Header)
+	//	newReq.URL = &loc
+	return req, err
 }
 
 func (r *RemoteService) Cluster() *v3.Cluster {
@@ -251,25 +267,6 @@ type UpgradeProxy struct {
 	Transport http.RoundTripper
 }
 
-func NewUpgradeProxy(location *url.URL, transport http.RoundTripper) *UpgradeProxy {
-	return &UpgradeProxy{
-		Location:  location,
-		Transport: transport,
-	}
-}
-
-func (p *UpgradeProxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	loc := *p.Location
-	loc.RawQuery = req.URL.RawQuery
-
-	newReq := req.WithContext(req.Context())
-	newReq.Header = utilnet.CloneHeader(req.Header)
-	newReq.URL = &loc
-
-	httpProxy := httputil.NewSingleHostReverseProxy(&url.URL{Scheme: p.Location.Scheme, Host: p.Location.Host})
-	httpProxy.Transport = p.Transport
-	httpProxy.ServeHTTP(rw, newReq)
-}
 
 type SimpleProxy struct {
 	url                *url.URL
